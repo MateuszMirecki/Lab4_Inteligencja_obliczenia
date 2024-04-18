@@ -56,21 +56,81 @@ class ItemCollectorEnv(gym.Env):
         print("\n".join(''.join(row) for row in grid))
         print()
 
+import pygame
+import numpy as np
+from pygame.locals import QUIT
+
+class PygameRenderer:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.screen = pygame.display.set_mode((width, height))
+        self.clock = pygame.time.Clock()
+        
+    def render(self, agent_pos, item_positions):
+        self.screen.fill((0, 0, 0))  # Clear the screen
+        
+        # Draw agent (blue square)
+        pygame.draw.rect(self.screen, (0, 0, 255), (agent_pos[0] * 30, agent_pos[1] * 30, 30, 30))
+        
+        # Draw items (green squares)
+        for item_pos in item_positions:
+            pygame.draw.rect(self.screen, (0, 255, 0), (item_pos[0] * 30, item_pos[1] * 30, 30, 30))
+        
+        pygame.display.flip()
+        self.clock.tick(4)  # Cap the frame rate at 4 FPS
+
+class ItemCollectorEnvWithPygameRenderer(ItemCollectorEnv):
+    def __init__(self, size=5, num_items=3):
+        super().__init__(size, num_items)
+        self.renderer = PygameRenderer(size * 30, size * 30)
+    
+    def render(self):
+        self.renderer.render(self._agent_location, self._item_locations)
+
 def automatic_play_2D(size=5, num_items=3):
-    env = ItemCollectorEnv(size, num_items)
+    env = ItemCollectorEnvWithPygameRenderer(size, num_items)
     obs = env.reset()
     done = False
     step = 0
     total_reward = 0
     while not done:
-        env.render()  # Print the grid to the terminal
-        action = env.action_space.sample()  # Random action
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                return
+        
+        # Calculate closest item
+        agent_pos = obs['agent']
+        closest_item = None
+        closest_distance = float('inf')
+        for item in obs['items']:
+            distance = np.abs(item - agent_pos).sum()
+            if distance < closest_distance:
+                closest_distance = distance
+                closest_item = item
+        
+        # Decide action based on closest item
+        if closest_item is not None:
+            direction = closest_item - agent_pos
+            action = np.argmax(np.abs(direction))
+            if direction[action] < 0:
+                action += 2  # To map from indices [0, 1] to actions [2, 3]
+        else:
+            # If no items left, just take a random action
+            action = env.action_space.sample()
+        
         obs, reward, done, _ = env.step(action)
         total_reward += reward
         step += 1
+        
+        # Render the current state
+        env.render()  
+        # Delay to control the speed of simulation
+        pygame.time.wait(100)  # Wait for 0.1 second
+        
         if done:
             print(f"Solved in {step} steps with total reward: {total_reward}")
-            env.render()  # Final state
-            input("Simulation ended , click enter to close.")
-
+            env.render()  
+            pygame.time.wait(1000) 
+            pygame.quit()
 

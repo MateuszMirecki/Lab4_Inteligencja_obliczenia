@@ -15,9 +15,9 @@ while True:
         5. exit program\n
         Enter what you want to do (1 - 5): """)
 
-    size = int(input('Enter the size: (default 5) ').strip() or "5")
+    size = int(input('Enter the size: (default 10) ').strip() or "10")
 
-    items = int(input('Enter number of items: (default 3) ').strip() or "3")
+    items = int(input('Enter number of items: (default 10) ').strip() or "10")
 
     if option == '1':
         manual_play_2D(size,items)

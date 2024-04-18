@@ -1,6 +1,8 @@
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
+import pygame
+from pygame.locals import KEYDOWN, K_UP, K_DOWN, K_LEFT, K_RIGHT, QUIT
 
 class ItemCollectorEnv(gym.Env):
     metadata = {'render_modes': ['human'], 'render_fps': 4}
@@ -16,12 +18,18 @@ class ItemCollectorEnv(gym.Env):
         self.action_space = spaces.Discrete(4)
         self._action_to_direction = {0: np.array([1, 0]), 1: np.array([0, 1]), 
                                      2: np.array([-1, 0]), 3: np.array([0, -1])}
-        self.actions = {'d': 0, 's': 1, 'a': 2, 'w': 3}  
+        
+        # Initialize Pygame
+        pygame.init()
+        self.cell_size = 50
+        self.screen = pygame.display.set_mode((self.size * self.cell_size, self.size * self.cell_size))
+        self.clock = pygame.time.Clock()
+        self.font = pygame.font.Font(None, 36)
 
     def _get_obs(self):
         return {"agent": self._agent_location, "items": self._item_locations}
 
-    def reset(self, seed=None, options=None):
+    def reset(self):
         self._agent_location = np.random.randint(0, self.size, size=2)
         self._item_locations = np.array([np.random.randint(0, self.size, size=2) for _ in range(self.num_items)])
         return self._get_obs()
@@ -46,14 +54,15 @@ class ItemCollectorEnv(gym.Env):
         return self._get_obs(), reward, terminated, {}
 
     def render(self):
-        grid = np.full((self.size, self.size), ' ')
-        x, y = self._agent_location
-        grid[y, x] = 'A'  # Agent
+        self.screen.fill((0, 0, 0))  # Black background
         for item in self._item_locations:
-            ix, iy = item
-            grid[iy, ix] = 'I'  # Item
-        print("\n".join(''.join(row) for row in grid))
-        print()
+            pygame.draw.rect(self.screen, (0, 255, 0), (item[0] * self.cell_size, item[1] * self.cell_size, self.cell_size, self.cell_size))
+        pygame.draw.rect(self.screen, (0, 0, 255), (self._agent_location[0] * self.cell_size, self._agent_location[1] * self.cell_size, self.cell_size, self.cell_size))
+        pygame.display.flip()
+        self.clock.tick(self.metadata['render_fps'])
+
+    def close(self):
+        pygame.quit()
 
 def manual_play_2D(size=5, num_items=3):
     env = ItemCollectorEnv(size, num_items)
@@ -62,16 +71,31 @@ def manual_play_2D(size=5, num_items=3):
     total_reward = 0
     env.render()
 
-    while not done:
-        move = input("Enter your move (w=up, s=down, a=left, d=right): ")
-        if move in env.actions:
-            obs, reward, done, _ = env.step(env.actions[move])
-            total_reward += reward
-            env.render()
-            if done:
-                print(f"Game completed in with total reward: {total_reward}")
-                input("Thanks for completing the game, click enter to close")
-        else:
-            print("Invalid move! Use 'w', 's', 'a', or 'd'.")
+    running = True
+    while not done and running:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                running = False
+            elif event.type == KEYDOWN:
+                if event.key == K_UP:
+                    action = 3
+                elif event.key == K_DOWN:
+                    action = 1
+                elif event.key == K_LEFT:
+                    action = 2
+                elif event.key == K_RIGHT:
+                    action = 0
+                else:
+                    continue
+                obs, reward, done, _ = env.step(action)
+                total_reward += reward
+                env.render()
+        if done:
+            print(f"Game completed with total reward: {total_reward}")
+            pygame.time.wait(2000)  # Delay to see final state
+            running = False
 
+    env.close()
 
+if __name__ == "__main__":
+    manual_play_2D()
