@@ -15,14 +15,18 @@ while True:
         5. exit program\n
         Enter what you want to do (1 - 5): """)
 
+    size = int(input('Enter the size: (default 5) ').strip() or "5")
+
+    items = int(input('Enter number of items: (default 3) ').strip() or "3")
+
     if option == '1':
-        manual_play_2D()
+        manual_play_2D(size,items)
     elif option == '2':
-        manual_play_3D()
+        manual_play_3D(size,items)
     elif option == '3':
-        automatic_play_2D()
+        automatic_play_2D(size,items)
     elif option == '4':
-        automatic_play_3D()
+        automatic_play_3D(size,items)
     elif option == '5':
         sys.exit(0)
     else:

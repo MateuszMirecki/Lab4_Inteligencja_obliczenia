@@ -54,8 +54,8 @@ class ItemCollectorEnv3D(gym.Env):
             print(item)
         print()
 
-def manual_play_3D():
-    env = ItemCollectorEnv3D(size=6, num_items=6)
+def manual_play_3D(size=5, num_items=3):
+    env = ItemCollectorEnv3D(size, num_items)
     obs = env.reset()
     done = False
     total_reward = 0

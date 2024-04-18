@@ -55,8 +55,8 @@ class ItemCollectorEnv(gym.Env):
         print("\n".join(''.join(row) for row in grid))
         print()
 
-def manual_play_2D():
-    env = ItemCollectorEnv(size=6, num_items=6)
+def manual_play_2D(size=5, num_items=3):
+    env = ItemCollectorEnv(size, num_items)
     obs = env.reset()
     done = False
     total_reward = 0
