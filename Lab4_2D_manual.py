@@ -16,7 +16,7 @@ class ItemCollectorEnv(gym.Env):
         self.action_space = spaces.Discrete(4)
         self._action_to_direction = {0: np.array([1, 0]), 1: np.array([0, 1]), 
                                      2: np.array([-1, 0]), 3: np.array([0, -1])}
-        self.actions = {'d': 0, 's': 1, 'a': 2, 'w': 3}  # Map keys to actions
+        self.actions = {'d': 0, 's': 1, 'a': 2, 'w': 3}  
 
     def _get_obs(self):
         return {"agent": self._agent_location, "items": self._item_locations}
@@ -55,8 +55,8 @@ class ItemCollectorEnv(gym.Env):
         print("\n".join(''.join(row) for row in grid))
         print()
 
-def manual_play():
-    env = ItemCollectorEnv(size=5, num_items=3)
+def manual_play_2D():
+    env = ItemCollectorEnv(size=6, num_items=6)
     obs = env.reset()
     done = False
     total_reward = 0
@@ -70,7 +70,8 @@ def manual_play():
             env.render()
             if done:
                 print(f"Game completed in with total reward: {total_reward}")
+                input("Thanks for completing the game, click enter to close")
         else:
             print("Invalid move! Use 'w', 's', 'a', or 'd'.")
 
-manual_play()
+

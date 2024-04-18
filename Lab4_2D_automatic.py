@@ -56,8 +56,7 @@ class ItemCollectorEnv(gym.Env):
         print("\n".join(''.join(row) for row in grid))
         print()
 
-# Agent solving the problem with random actions
-def solve_item_collector():
+def automatic_play_2D():
     env = ItemCollectorEnv(size=5, num_items=3)
     obs = env.reset()
     done = False
@@ -72,5 +71,6 @@ def solve_item_collector():
         if done:
             print(f"Solved in {step} steps with total reward: {total_reward}")
             env.render()  # Final state
+            input("Simulation ended , click enter to close.")
 
-solve_item_collector()
+
